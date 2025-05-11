@@ -1,10 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+// Utility function for debounce
+function debounce(func, delay) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+}
 
 function App() {
   const [paceTime, setPaceTime] = useState('5:00');
   const [paceDistance, setPaceDistance] = useState('1');
   const [customDistances, setCustomDistances] = useState('400m, 1k, 1mi, 5k, 10k, half_marathon, marathon');
   const [splits, setSplits] = useState({});
+  const [isUpdated, setIsUpdated] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const calculateSplits = () => {
     const paceParts = paceTime.split(':').map(Number);
@@ -12,9 +23,11 @@ function App() {
     const paceDist = parseFloat(paceDistance);
 
     if (isNaN(totalPaceSeconds) || isNaN(paceDist) || paceDist <= 0) {
-      alert('Please enter valid pace time and distance.');
+      setErrorMessage('Please enter valid pace time and distance.');
       return;
     }
+
+    setErrorMessage(''); // Clear error message if inputs are valid
 
     const distances = customDistances
       .split(',')
@@ -39,56 +52,79 @@ function App() {
       const hours = Math.floor(splitTime / 3600);
       const minutes = Math.floor((splitTime % 3600) / 60);
       const seconds = Math.round(splitTime % 60);
-      calculatedSplits[`${value}${unit}`] =
+      const formattedDistance = unit === 'm' ? `${value}${unit}` : unit === 'km' ? `${value}k` : `${value}${unit}`;
+      calculatedSplits[formattedDistance] =
         hours > 0
           ? `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
           : `${minutes}:${seconds.toString().padStart(2, '0')}`;
     });
 
     setSplits(calculatedSplits);
+    setIsUpdated(true);
+    setTimeout(() => setIsUpdated(false), 500); // Reset visual feedback after 500ms
   };
+
+  useEffect(() => {
+    const debouncedCalculate = debounce(() => {
+      if (paceTime && paceDistance && !isNaN(parseFloat(paceDistance))) {
+        calculateSplits();
+      }
+    }, 300); // 300ms debounce delay
+
+    const timeout = setTimeout(debouncedCalculate, 300);
+
+    return () => clearTimeout(timeout); // Clear timeout on cleanup
+  }, [paceTime, paceDistance, customDistances]);
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Pace to Splits Calculator</h1>
-      <div>
-        <label>
-          Pace Time (mm:ss):
-          <input
-            type="text"
-            value={paceTime}
-            onChange={(e) => setPaceTime(e.target.value)}
-            placeholder="e.g., 5:30"
-          />
-        </label>
+      <h1 style={{ textAlign: 'center', color: 'green' }}>Pace to Splits Calculator</h1>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <label style={{ display: 'flex', flexDirection: 'column', fontWeight: 'bold' }}>
+            Pace Time (mm:ss):
+            <input
+              type="text"
+              value={paceTime}
+              onChange={(e) => setPaceTime(e.target.value)}
+              placeholder="e.g., 5:30"
+              style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+            />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', fontWeight: 'bold' }}>
+            Pace Distance (km):
+            <input
+              type="number"
+              value={paceDistance}
+              onChange={(e) => setPaceDistance(e.target.value)}
+              placeholder="e.g., 1"
+              style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+            />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', fontWeight: 'bold' }}>
+            Custom Distances (comma-separated, e.g., 400m, 1k, 5k):
+            <input
+              type="text"
+              value={customDistances}
+              onChange={(e) => setCustomDistances(e.target.value)}
+              style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', width: '100%' }}
+            />
+          </label>
+        </div>
+        {errorMessage && (
+          <div style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>{errorMessage}</div>
+        )}
+        <button
+          onClick={calculateSplits}
+          style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: 'green', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', width: '100%' }}
+        >
+          Calculate Splits
+        </button>
       </div>
-      <div>
-        <label>
-          Pace Distance (km):
-          <input
-            type="number"
-            value={paceDistance}
-            onChange={(e) => setPaceDistance(e.target.value)}
-            placeholder="e.g., 1"
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Custom Distances (comma-separated, e.g., 400m, 1k, 5k):
-          <input
-            type="text"
-            value={customDistances}
-            onChange={(e) => setCustomDistances(e.target.value)}
-            style={{ width: '100%' }}
-          />
-        </label>
-      </div>
-      <button onClick={calculateSplits}>Calculate Splits</button>
       {Object.keys(splits).length > 0 && (
-        <div>
-          <h2>Splits</h2>
-          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <div style={{ marginTop: '20px', opacity: isUpdated ? 0.5 : 1, transition: 'opacity 0.5s ease-in-out' }}>
+          <h2 style={{ textAlign: 'center' }}>Splits</h2>
+          <table style={{ borderCollapse: 'collapse', width: '100%', margin: '0 auto', maxWidth: '600px' }}>
             <thead>
               <tr>
                 <th style={{ border: '1px solid black', padding: '8px' }}>Distance</th>
