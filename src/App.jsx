@@ -19,7 +19,34 @@ function App() {
   const [isUpdated, setIsUpdated] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [shouldScroll, setShouldScroll] = useState(false)
+  const [isEditingDistances, setIsEditingDistances] = useState(false)
   const resultsRef = useRef(null)
+
+  const parseDistances = () => {
+    return customDistances
+      .split(',')
+      .map(d => d.trim())
+      .filter(d => d)
+  }
+
+  const handleDistancePillClick = () => {
+    setIsEditingDistances(true)
+  }
+
+  const handleDistanceInputBlur = () => {
+    setIsEditingDistances(false)
+  }
+
+  const handleDistanceInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      setIsEditingDistances(false)
+    }
+  }
+
+  const removePill = (distanceToRemove) => {
+    const distances = parseDistances().filter(d => d !== distanceToRemove)
+    setCustomDistances(distances.join(', '))
+  }
 
   const calculateSplits = () => {
     const paceParts = paceTime.split(':').map(Number)
@@ -153,13 +180,36 @@ function App() {
 
         <div className='input-group'>
           <label className='input-label'>Distances to Calculate</label>
-          <input
-            type='text'
-            value={customDistances}
-            onChange={e => setCustomDistances(e.target.value)}
-            placeholder='e.g., 400m, 1k, 5k'
-            className='input-field'
-          />
+          {isEditingDistances ? (
+            <input
+              type='text'
+              value={customDistances}
+              onChange={e => setCustomDistances(e.target.value)}
+              onBlur={handleDistanceInputBlur}
+              onKeyPress={handleDistanceInputKeyPress}
+              placeholder='e.g., 400m, 1k, 5k'
+              className='input-field'
+              autoFocus
+            />
+          ) : (
+            <div className='pill-container' onClick={handleDistancePillClick}>
+              {parseDistances().map((distance, index) => (
+                <div key={index} className='distance-pill'>
+                  <span className='pill-text'>{distance}</span>
+                  <button 
+                    className='pill-remove'
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removePill(distance)
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <div className='pill-add-hint'>Tap to edit</div>
+            </div>
+          )}
         </div>
 
         {errorMessage && <div className='error-message'>{errorMessage}</div>}
