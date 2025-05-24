@@ -18,6 +18,7 @@ function App() {
   const [splits, setSplits] = useState({})
   const [isUpdated, setIsUpdated] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [shouldScroll, setShouldScroll] = useState(false)
   const resultsRef = useRef(null)
 
   const calculateSplits = () => {
@@ -84,15 +85,18 @@ function App() {
     setIsUpdated(true)
     setTimeout(() => setIsUpdated(false), 500) // Reset visual feedback after 500ms
     
-    // Smooth scroll to results
-    setTimeout(() => {
-      if (resultsRef.current) {
-        resultsRef.current.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
-        })
-      }
-    }, 100) // Small delay to ensure DOM is updated
+    // Smooth scroll to results only if triggered by user action
+    if (shouldScroll) {
+      setTimeout(() => {
+        if (resultsRef.current) {
+          resultsRef.current.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          })
+        }
+        setShouldScroll(false) // Reset scroll flag after scrolling
+      }, 100) // Small delay to ensure DOM is updated
+    }
   }
 
   const scrollToTop = () => {
@@ -102,9 +106,15 @@ function App() {
     })
   }
 
+  const handleCalculateClick = () => {
+    setShouldScroll(true)
+    calculateSplits()
+  }
+
   useEffect(() => {
     const debouncedCalculate = debounce(() => {
       if (paceTime && paceDistance && !isNaN(parseFloat(paceDistance))) {
+        setShouldScroll(false) // Don't scroll for automatic calculations
         calculateSplits()
       }
     }, 300) // 300ms debounce delay
@@ -154,7 +164,7 @@ function App() {
 
         {errorMessage && <div className='error-message'>{errorMessage}</div>}
 
-        <button onClick={calculateSplits} className='primary-button'>
+        <button onClick={handleCalculateClick} className='primary-button'>
           Calculate Splits
         </button>
       </div>
