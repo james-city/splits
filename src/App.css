@@ -196,8 +196,8 @@ body {
 }
 
 .back-to-top-button {
-  background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
-  color: white;
+  background: rgba(120, 120, 128, 0.16);
+  color: #007aff;
   border: none;
   border-radius: 14px;
   padding: 14px 24px;
@@ -216,8 +216,8 @@ body {
 }
 
 .back-to-top-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(52, 199, 89, 0.3);
+  background: rgba(120, 120, 128, 0.24);
+  transform: translateY(-1px);
 }
 
 .back-to-top-button:active {
