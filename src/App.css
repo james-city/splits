@@ -1,6 +1,10 @@
 /* iOS App Styling */
 @import url('https://fonts.googleapis.com/css2?family=-apple-system,BlinkMacSystemFont,San Francisco,Segoe UI,Roboto,Helvetica Neue,sans-serif');
 
+html {
+  scroll-behavior: smooth;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -189,6 +193,35 @@ body {
 
 .table-row:nth-child(even) .table-cell {
   background: #ffffff;
+}
+
+.back-to-top-button {
+  background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 24px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 24px;
+  display: block;
+  width: 100%;
+  text-align: center;
+  letter-spacing: -0.24px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  appearance: none;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back-to-top-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(52, 199, 89, 0.3);
+}
+
+.back-to-top-button:active {
+  transform: translateY(0);
 }
 
 /* Responsive Design */

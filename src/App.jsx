@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 
 function debounce(func, delay) {
@@ -18,6 +18,7 @@ function App() {
   const [splits, setSplits] = useState({})
   const [isUpdated, setIsUpdated] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const resultsRef = useRef(null)
 
   const calculateSplits = () => {
     const paceParts = paceTime.split(':').map(Number)
@@ -82,6 +83,23 @@ function App() {
     setSplits(calculatedSplits)
     setIsUpdated(true)
     setTimeout(() => setIsUpdated(false), 500) // Reset visual feedback after 500ms
+    
+    // Smooth scroll to results
+    setTimeout(() => {
+      if (resultsRef.current) {
+        resultsRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        })
+      }
+    }, 100) // Small delay to ensure DOM is updated
+  }
+
+  const scrollToTop = () => {
+    window.scrollTo({ 
+      top: 0, 
+      behavior: 'smooth' 
+    })
   }
 
   useEffect(() => {
@@ -142,7 +160,7 @@ function App() {
       </div>
 
       {Object.keys(splits).length > 0 && (
-        <div className='results-card' style={{ opacity: isUpdated ? 0.5 : 1 }}>
+        <div className='results-card' ref={resultsRef} style={{ opacity: isUpdated ? 0.5 : 1 }}>
           <h2 className='results-title'>Splits</h2>
           <table className='splits-table'>
             <thead>
@@ -160,6 +178,10 @@ function App() {
               ))}
             </tbody>
           </table>
+          
+          <button onClick={scrollToTop} className='back-to-top-button'>
+            ↑ Back to Top
+          </button>
         </div>
       )}
     </div>
