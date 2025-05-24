@@ -142,7 +142,7 @@ function App() {
         </div>
 
         <div className='input-group'>
-          <label className='input-label'>Custom Distances</label>
+          <label className='input-label'>Distances to Calculate</label>
           <input
             type='text'
             value={customDistances}
